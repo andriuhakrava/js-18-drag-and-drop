@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		div { 
+		  margin-bottom: 16px; 
+		  width: 200px; 
+		  height: 120px; 
+		  border: 1px solid red; 
+		 }
+		span { 
+			position: relative;
+		  display: inline-block; padding: 2px 10px; border: 1px solid green; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: move; }
+		.over { background: pink; }
+		.move { position: absolute; opacity: 0.5; box-shadow: 0 0 3px rgba(0, 0, 0, 1); }
+	</style>
+</head>
+<body>
+	<div></div>
+	<span>test</span>
+	<script>
+		let span = document.querySelector('span');
+		let div = document.querySelector('div');
+		
+		span.ondragstart = function(){ return false; };
+
+		span.onmousedown = function(e){
+			this.mousePosX = e.layerX;
+		  this.mousePosY = e.layerY;
+		  span.style.left = e.pageX - span.mousePosX + 'px';
+		  span.style.top = e.pageY - span.mousePosY + 'px';
+		  document.body.appendChild(this);
+		  this.classList.add('move');
+		}
+
+		window.onmousemove = function(e){
+		  if (!span.classList.contains('move')) { return false; }
+		  span.style.left = e.pageX - span.mousePosX + 'px';
+		  span.style.top = e.pageY - span.mousePosY + 'px';
+		  if (detectTargetDiv(div, {x: e.pageX, y: e.pageY})) {
+		  	div.classList.add('over');
+		  } else {
+		  	div.classList.remove('over');
+		  }
+		}
+
+		function detectTargetDiv(elem, mousePos){
+			let elemPos = getOffset(elem);
+			let mx = mousePos.x;
+			let my = mousePos.y;
+			let x1 = elemPos.left;
+			let y1 = elemPos.top;
+			let x2 = x1 + elem.offsetWidth;
+			let y2 = y1 + elem.offsetHeight;
+			return mx > x1 && mx < x2 && my > y1 && my < y2;
+		}
+
+		window.onmouseup = function(e){
+			if (!span.classList.contains('move')) { return false; }
+			let x = e.pageX;
+			let y = e.pageY;
+			let divOffset = getOffset(div);
+		  span.classList.remove('move');
+		  span.style.left = x - span.mousePosX - divOffset.left + 'px';
+		  span.style.top = y - span.mousePosY - divOffset.top + 'px';
+		  div.appendChild(span);
+		}
+
+		function getOffset(elem){
+			let left = elem.offsetLeft;
+			let top = elem.offsetTop;
+			for (let parent = elem.offsetParent; parent; parent = parent.offsetParent){
+				left += parent.offsetLeft;
+				top += parent.offsetTop;
+			}
+			return {left, top};
+		}
+		
+	</script>
+</body>
+</html>
